@@ -7,7 +7,8 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "9sm5xK": "http://www.google.com",
+  "1" : 'http bla bla'
 };
 function generateRandomString() {
     const length = 6;
@@ -51,7 +52,6 @@ res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  // const longURL = ...
   const longURL = urlDatabase[req.params.shortURL];
   if(!longURL){ 
     res.status(404)
@@ -60,6 +60,13 @@ app.get("/u/:shortURL", (req, res) => {
   }
   res.redirect(longURL);
 });
+
+app.post('/urls/:shortURL/delete', (req, res) =>{
+  const urlToDelete = req.params.shortURL;
+  console.log(urlDatabase[req.params.shortURL], 'urlDatabase[req.params.shortURL]')
+  delete urlDatabase[urlToDelete];
+  res.redirect('/urls');
+})
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
