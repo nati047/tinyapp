@@ -15,15 +15,14 @@ function generateRandomString() {
     const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
     for ( var i = 0; i <= length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      randomString += characters.charAt(Math.floor(Math.random() * charactersLength));
   
     }
    return randomString;
-
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send("Hello User!");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -44,8 +43,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  
+res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  // const longURL = ...
+  const longURL = urlDatabase[req.params.shortURL];
+  if(!longURL){ 
+    res.status(404)
+    res.send(`404 Page not found`)
+    return;
+  }
+  res.redirect(longURL);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
