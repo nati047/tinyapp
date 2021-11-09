@@ -4,11 +4,12 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 const bodyParser = require("body-parser");
+const json = require("body-parser/lib/types/json");
 app.use(bodyParser.urlencoded({extended: true}));
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
-  "1" : 'http bla bla'
+  "1" : 'https://web.compass.lighthouselabs.ca/days/w03d2/activities/165'
 };
 function generateRandomString() {
     const length = 6;
@@ -46,9 +47,8 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  console.log(req.body);  // Log the POST request body to the console
   
-res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -64,7 +64,14 @@ app.get("/u/:shortURL", (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) =>{
   const urlToDelete = req.params.shortURL;
   console.log(urlDatabase[req.params.shortURL], 'urlDatabase[req.params.shortURL]')
+  
   delete urlDatabase[urlToDelete];
+  res.redirect('/urls');
+})
+
+app.post('/urls/:shortURL/edit', (req, res) =>{
+  console.log(req.body)
+  urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect('/urls');
 })
 
