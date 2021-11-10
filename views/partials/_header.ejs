@@ -8,9 +8,17 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <form method="POST" action="/login"><input type="text" name="username" >
-        <button type="submit" class="btn btn-secondary">Login</button>
-        </form>
+        <% if(!username){ %>
+          <form method="POST" style="padding-left: 1000px" action="/login"><input type="text" name="username" >
+            <button type="submit" class="btn btn-secondary">Login</button>
+            <% } else{ %>
+              <form method="POST" action="/logout"style="padding-left: 950px"  >
+                <h5 >Logged in as: <%= username %> <button type="submit" class="btn btn-secondary">Logout</button></h5> 
+                
+              </form>
+            <% } %> 
+            
+      </form>
       </div>
     </div>
   </nav>
