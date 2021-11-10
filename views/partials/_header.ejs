@@ -12,10 +12,9 @@
           <form method="POST" style="padding-left: 1000px" action="/login"><input type="text" name="username" >
             <button type="submit" class="btn btn-secondary">Login</button>
             <% } else{ %>
-              <form method="POST" action="/logout"style="padding-left: 950px"  >
-                <h5 >Logged in as: <%= username %> <button type="submit" class="btn btn-secondary">Logout</button></h5> 
-                
-              </form>
+              <form method="POST" action="/logout"style="padding-left: 985px"  >
+                <h5 >Logged in as: <%= username %> <button type="submit" class="btn btn-dark">Logout</button></h5> 
+               </form>
             <% } %> 
             
       </form>
