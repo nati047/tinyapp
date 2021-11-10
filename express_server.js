@@ -54,7 +54,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const userIdCookie = req.cookies['user_id']
+  const userIdCookie = req.cookies['user_id'];
   const templateVars = {
     urls: urlDatabase,
     user: users[userIdCookie]
@@ -134,6 +134,13 @@ app.post('/register', (req, res) => {
   res.cookie('user_id', userId);
   res.redirect('/urls')
 })
+
+app.get('/login', (req, res ) =>{
+  const userIdCookie = req.cookies['user_id']
+  const templateVars = { user: users[userIdCookie] }
+  res.render('login', templateVars);
+
+});
 
 app.get("/urls/:shortURL", (req, res) => { // show longURL info for given shortURL 
   const templateVars = {
