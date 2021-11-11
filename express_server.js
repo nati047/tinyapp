@@ -16,7 +16,10 @@ const urlDatabase = {
 };
 
 const users = {
-
+  waka: {
+    email: 'isaacnatnael@gmail.com',
+    password: '123456'
+  }
 }
 
 const generateRandomString = (length) => {
@@ -96,8 +99,24 @@ app.post('/urls/:shortURL/edit', (req, res) => {  // replace longURL with new va
 })
 
 app.post('/login', (req, res) => {
-  // res.cookie('username', req.body.username);
-  res.redirect('/urls');
+  const { email, password } = req.body; // get user's input password and email
+  if (emailLookup(email, users)) {
+    for (let userId in users) {
+      if (users[userId].email === email) {
+        if (users[userId].password === password) {
+          res.cookie('user_id', userId);
+          res.redirect('/urls');
+          return;
+        }
+        res.statusCode = 403;
+        res.send('Password incorrect');
+        return;
+      }
+    }
+
+  }
+  res.statusCode = 403;
+  res.send('No account found under this email');
 })
 
 app.post('/logout', (req, res) => {
@@ -116,26 +135,26 @@ app.post('/register', (req, res) => {
   const userId = generateRandomString(4);
   const userInput = req.body;
   const emailPresent = emailLookup(userInput.email, users); // check if email is present in users object
-  if(!userInput.email || !userInput.password){
-   res.statusCode = 400;
-   res.send('<h3>Invalid Input!</h3>')
-   return;
+  if (!userInput.email || !userInput.password) {
+    res.statusCode = 400;
+    res.send('<h3>Invalid Input!</h3>')
+    return;
   }
-  if(emailPresent) {
+  if (emailPresent) {
     res.statusCode = 400;
     res.send('<h3>Account already exsists with this email!</>');
     return;
   }
   users[userId] = {
-      id: userId,
-      email: userInput.email,
-      password: userInput.password
+    id: userId,
+    email: userInput.email,
+    password: userInput.password
   }
   res.cookie('user_id', userId);
   res.redirect('/urls')
 })
 
-app.get('/login', (req, res ) =>{
+app.get('/login', (req, res) => {
   const userIdCookie = req.cookies['user_id']
   const templateVars = { user: users[userIdCookie] }
   res.render('login', templateVars);
