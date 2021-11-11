@@ -11,6 +11,9 @@
 <body>
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
+   <% if (!user) { %>
+      <h3>Login to view your shortened URLs or Register</h3>
+   <% } else {%>
     <h3>My URLs</h3>
     <table class="table">
       <thead>
@@ -25,11 +28,13 @@
         <% for(let url in urls) { %>
           <tr>
             <td><%= url %></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url].LongURL %></td>
             <td><form  method="GET" action="/urls/<%=url%>"><input class="btn btn-info" type='submit' value='Edit'></form></td>
             <td><form  method="POST" action="/urls/<%=url%>/delete"><input class="btn btn-danger" type='submit' value='Delete'></form></td>
           </tr>
         <% } %>
+   <% } %>
+
       </tbody>
     </table>
   </main>
