@@ -12,7 +12,7 @@
         <a class="nav-item nav-link" href="/register">Register</a>
         <% if(!user){ %>
           <form method="GET" style="padding-left: 1100px" action="/login">
-            <a class="nav-item nav-link" href="/login">Login</a>
+            <a class="nav-item nav-link" style='color:black' href="/login">Login</a>
             <% } else{ %>
               <form method="POST" action="/logout" style="padding-left: 700px">
                 <h5>Logged in as: <%= user.email %> <button type="submit" class="btn btn-dark">Logout</button></h5>

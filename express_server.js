@@ -5,67 +5,14 @@ const bcrypt = require('bcryptjs');
 const bodyParser = require("body-parser");
 const json = require("body-parser/lib/types/json");
 const PORT = 8080; // default port 8080
+const  { getUserByEmail, emailLookup ,generateRandomString, urlsForUser, checkPassword, authenticateUser, encryptPassword} = require("./helpers");
 
-// app.use(cookieParser());
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
-}))
-
-const generateRandomString = (length) => {
-  let randomString = '';
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    randomString += characters.charAt(Math.floor(Math.random() * charactersLength));
-
-  }
-  return randomString;
-};
-
-
-const emailLookup = (emailToCheck, usersList) => {
-  for (let id in usersList) {
-    if ( usersList[id].email === emailToCheck ) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const urlsForUser = (id) => {
-  let availableUrlsList = {};
-  for (let key in urlDatabase) {
-    if (id === urlDatabase[key].userID) {
-      availableUrlsList[key] = urlDatabase[key];
-    }
-  }
-  return availableUrlsList;
-};
-
-const encryptPassword = (password) =>{
-  const hashedPassword = bcrypt.hashSync(password, 10);
-    return hashedPassword;
-};
-
-const checkPassword = (text, hashedPass) =>{ 
-  return bcrypt.compareSync(text, hashedPass);
-}
-
-const authenticateUser = (email, password, list) =>{
-  if (emailLookup(email, list)) {      //check if email  exists 
-    for (let userId in list) {
-      if (list[userId].email === email) {  //get user id of that email
-        if (checkPassword(password , list[userId].password )) {  //  check password 
-          return userId;
-        }
-      }
-    }
-  }
-  return false;
-}
+}));
 
 const urlDatabase = {
   "b2xVn2": { LongURL: "http://www.lighthouselabs.ca", userID: "aJ48lW" },
@@ -76,7 +23,7 @@ const urlDatabase = {
 const users = {
   'waka': {
     id: 'waka',
-    email: 'isaacnatnael@gmail.com',  // given 
+    email: 'isaacnatnael@gmail.com',  // given
     password: encryptPassword('123')
   }
 
@@ -101,7 +48,7 @@ app.get("/hello", (req, res) => {
 app.get('/urls', (req, res) => {
   const userIdCookie = req.session.user_id;
   const id = req.session.user_id;
-  const urlsOfId = urlsForUser(id);
+  const urlsOfId = urlsForUser(id, urlDatabase);
   const templateVars = {
     urls: urlsOfId,
     user: users[userIdCookie]
@@ -114,7 +61,7 @@ app.get("/urls/new", (req, res) => { // display add new data pages
   const userIdCookie = req.session.user_id;
   if (req.session.user_id) {
     const templateVars = { user: users[userIdCookie] };
-   return res.render("urls_new", templateVars);
+    return res.render("urls_new", templateVars);
   }
   res.redirect('/login');
 });
@@ -128,7 +75,7 @@ app.post("/urls", (req, res) => { // add new shortURL - longURL pair to database
 app.get("/u/:shortURL", (req, res) => { // redirect to longURL web page
   const shortURL = req.params.shortURL;
   const urlToRedirectTo = urlDatabase[shortURL].LongURL;
-  console.log( '-------req.params', urlDatabase[shortURL].LongURL)
+  console.log('-------req.params', urlDatabase[shortURL].LongURL);
   res.redirect(urlToRedirectTo);
 });
 
@@ -176,11 +123,10 @@ app.post('/login', (req, res) => {
     res.send('Invalid user name or passworrd!!!s');
     return;
   }
-  const userId = authenticateUser(email, password, users);
-  req.session.user_id = userId;   
+  req.session.user_id = getUserByEmail(email, users);
   res.redirect('/urls');
  
- });
+});
 
 app.post('/logout', (req, res) => {
   req.session = null;
@@ -214,7 +160,7 @@ app.post('/register', (req, res) => {
     email: userInput.email,
     password: encryptPassword(userInput.password)
   };
-  req.session.user_id = "some value";
+  req.session.user_id = userId;
   res.redirect('/urls');
 });
 
@@ -245,9 +191,6 @@ app.get("/urls/:shortURL", (req, res) => { // show longURL info for given shortU
   };
   res.render("urls_show", templateVars);
 });
-
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
