@@ -16,10 +16,7 @@ const urlDatabase = {
 };
 
 const users = {
-  waka: {
-    email: 'isaacnatnael@gmail.com',
-    password: '123456'
-  }
+
 }
 
 const generateRandomString = (length) => {
@@ -35,7 +32,6 @@ const generateRandomString = (length) => {
 
 const emailLookup = (emailToCheck, obj) => {
   for (let id in obj) {
-    console.log('ids.email ********  ', obj[id].email);
     if (emailToCheck === obj[id].email) {
       return true;
     }
