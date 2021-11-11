@@ -95,13 +95,10 @@ app.post("/urls", (req, res) => { // add new shortURL - longURL pair to database
 });
 
 app.get("/u/:shortURL", (req, res) => { // redirect to longURL web page
-  const longURL = urlDatabase[req.params.shortURL].LongURL;
-  if (!longURL) {
-    res.status(404);
-    res.send(`404 Page not found`);
-    return;
-  }
-  res.redirect(longURL);
+  const shortURL = req.params.shortURL;
+  const urlToRedirectTo = urlDatabase[shortURL].LongURL;
+  console.log( '-------req.params', urlDatabase[shortURL].LongURL)
+  res.redirect(urlToRedirectTo);
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => { // remove shortURL - longURL pair from database
