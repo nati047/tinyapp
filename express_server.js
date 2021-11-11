@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcryptjs');
+
 app.use(cookieParser());
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
@@ -8,21 +10,6 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 const json = require("body-parser/lib/types/json");
 app.use(bodyParser.urlencoded({ extended: true }));
-
-const urlDatabase = {
-  "b2xVn2": { LongURL: "http://www.lighthouselabs.ca", userID: "aJ48lW" },
-  "9sm5xK": { LongURL: "http://www.google.com", userID: "aJ48lW" },
-  "1": { LongURL: "https://web.compass.lighthouselabs.ca/days/w03d2/activities/165", userID: "waka" }
-};
-
-const users = {
-  'waka': {
-    id: 'waka',
-    email: 'isaacnatnael@gmail.com',
-    password: '123'
-  }
-
-};
 
 const generateRandomString = (length) => {
   let randomString = '';
@@ -34,6 +21,7 @@ const generateRandomString = (length) => {
   }
   return randomString;
 };
+
 
 const emailLookup = (emailToCheck, obj) => {
   for (let id in obj) {
@@ -53,6 +41,33 @@ const urlsForUser = (id) => {
   }
   return availableUrlsList;
 };
+
+const encryptPassword = (password) =>{
+  const hashedPassword = bcrypt.hashSync(password, 10);
+    return hashedPassword;
+};
+
+const checkPassword = (text, hashedPass) =>{ 
+  return bcrypt.compareSync(text, hashedPass);
+}
+
+const urlDatabase = {
+  "b2xVn2": { LongURL: "http://www.lighthouselabs.ca", userID: "aJ48lW" },
+  "9sm5xK": { LongURL: "http://www.google.com", userID: "aJ48lW" },
+  "1": { LongURL: "https://web.compass.lighthouselabs.ca/days/w03d2/activities/165", userID: "waka" }
+};
+
+const users = {
+  'waka': {
+    id: 'waka',
+    email: 'isaacnatnael@gmail.com',
+    password: encryptPassword('123')
+  }
+
+};
+
+
+ 
 
 
 app.get("/", (req, res) => {
@@ -83,7 +98,7 @@ app.get("/urls/new", (req, res) => { // display add new data pages
   const userIdCookie = req.cookies['user_id'];
   if (req.cookies.user_id) {
     const templateVars = { user: users[userIdCookie] };
-    res.render("urls_new", templateVars);
+   return res.render("urls_new", templateVars);
   }
   res.redirect('/login');
 });
@@ -141,7 +156,7 @@ app.post('/login', (req, res) => {
   if (emailLookup(email, users)) {
     for (let userId in users) {
       if (users[userId].email === email) {
-        if (users[userId].password === password) {
+        if (checkPassword(password , users[userId].password )) {
           res.cookie('user_id', userId);
           res.redirect('/urls');
           return;
@@ -186,7 +201,7 @@ app.post('/register', (req, res) => {
   users[userId] = {
     id: userId,
     email: userInput.email,
-    password: userInput.password
+    password: encryptPassword(userInput.password)
   };
   res.cookie('user_id', userId);
   res.redirect('/urls');
