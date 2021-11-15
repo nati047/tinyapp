@@ -4,6 +4,7 @@ const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const PORT = 8080; 
 const  { getUserByEmail, emailLookup ,generateRandomString, urlsForUser, authenticateUser, encryptPassword} = require("./helpers");
+const {urlDatabase , users} = require('./data_base');
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -12,15 +13,7 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }));
 
-const urlDatabase = {   
-  "b2xVn2": { LongURL: "http://www.lighthouselabs.ca", userID: "aJ48lW" },
-  "9sm5xK": { LongURL: "http://www.google.com", userID: "aJ48lW" },
-  "1": { LongURL: "https://web.compass.lighthouselabs.ca/days/w03d2/activities/165", userID: "waka" }
-};
-//object to store logged in users
-const users = {  
- 
-};
+
 
 app.get("/", (req, res) => {    
   const id = req.session.user_id;   // get id from browser session
@@ -58,8 +51,15 @@ app.get("/urls/new", (req, res) => { // display add new data pages
 
 app.post("/urls", (req, res) => { // add new shortURL - longURL pair to database
   const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = { LongURL: req.body.longURL, userID: req.session.user_id };
-  res.redirect(`/urls/${shortURL}`);
+  const loggedUser = req.session.user_id;
+  if(req.session.user_id){
+    urlDatabase[shortURL] = { LongURL: req.body.longURL, userID: req.session.user_id };
+    res.redirect(`/urls/${shortURL}`);
+  }
+  else {
+    res.status(403);
+    res.send('<h3>Access for logged in users only!!!</h3>\n');
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => { // redirect to longURL web page
@@ -76,17 +76,13 @@ app.get("/u/:shortURL", (req, res) => { // redirect to longURL web page
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => { // remove shortURL - longURL pair from database
-  const urlToDelete = req.params.shortURL;
   const loggedInUserId = req.session.user_id;
   const shortURL = req.params.shortURL;
-  const urlsOfId = urlsForUser(loggedInUserId, urlDatabase);
   if (loggedInUserId) {
-    for (let key in urlsOfId) {
-      if (key === shortURL) {
-        delete urlDatabase[urlToDelete];
-        res.redirect('/urls');
-        return;
-      }
+    if (urlDatabase[shortURL].userID === loggedInUserId) {
+      delete urlDatabase[shortURL];
+      res.redirect('/urls');
+      return;
     }
   }
   res.status(403);
@@ -96,22 +92,16 @@ app.post('/urls/:shortURL/delete', (req, res) => { // remove shortURL - longURL 
 app.post('/urls/:shortURL/edit', (req, res) => {  // replace longURL with new value from user
   const loggedInUserId = req.session.user_id;
   const shortURL = req.params.shortURL;
-  const urlsOfId = urlsForUser(loggedInUserId, urlDatabase);
   if (loggedInUserId) {
-    console.log(urlsOfId);
-    for (let key in urlsOfId) {
-      if (key === shortURL) {
+    if (urlDatabase[shortURL].userID === loggedInUserId) {
         urlDatabase[req.params.shortURL].LongURL = req.body.longURL;
         res.redirect('/urls');
         return;
       }
-    }
   }
   res.statusCode = 403;
   res.send('Access for logged in users only\n');
 });
-
-
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body; // get user's input password and email
